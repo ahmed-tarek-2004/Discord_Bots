@@ -31,7 +31,7 @@ file_inputs = wait.until(EC.presence_of_all_elements_located((By.CSS_SELECTOR, "
 file_inputs[0].send_keys(image1_path)
 print(" Uploaded person image")
 
-for i in range(10,1,-1):
+for i in range(10,0,-1):
     print("wait "+str(i)+" s")
     time.sleep(1)
 
@@ -43,7 +43,7 @@ if len(file_inputs) > 1:
 else:
     print(" Couldn't find second input!")
 
-for i in range(10,1,-1):
+for i in range(20,1,-1):
     print("wait "+str(i)+" s")
     time.sleep(1)
 
@@ -63,9 +63,10 @@ try:
     )
     print("Result appeared!")
 except:
+  print("Connection Time Out Will Try again .")
+  print(" Waiting for garment image to appear...")
   run_button = wait.until(EC.element_to_be_clickable((By.ID, "button")))
   run_button.click()
-  print(" Waiting for garment image to appear...")
   
   result_img = wait.until(
       EC.presence_of_all_elements_located((By.CSS_SELECTOR, "div.image-frame img[loading='lazy'].svelte-1pijsyv"))
