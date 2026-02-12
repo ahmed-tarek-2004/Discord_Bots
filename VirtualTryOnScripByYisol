@@ -6,7 +6,7 @@ import os
 import time
 import requests
 
-image1_path = os.getcwd()+r"\\gharabawy.jpeg"
+image1_path = os.getcwd()+r"\\Student.jpeg"
 image2_path = os.getcwd()+r"\\gpHoody.jpg"
 # print(image1_path)
 
@@ -14,6 +14,7 @@ image2_path = os.getcwd()+r"\\gpHoody.jpg"
 options = webdriver.ChromeOptions()
 options.add_argument("--start-maximized")
 driver = webdriver.Chrome(options=options)
+# driver.get("https://huggingface.co/spaces/Kwai-Kolors/Kolors-Virtual-Try-On")
 driver.get("https://huggingface.co/spaces/yisol/IDM-VTON")
 
 
@@ -51,6 +52,7 @@ for i in range(20,1,-1):
 
 
 print(" Running model...")
+# run_button = wait.until(EC.element_to_be_clickable((By.ID, "button")))
 run_button = wait.until(EC.element_to_be_clickable((By.ID, "component-25")))
 run_button.click()
 
@@ -66,15 +68,30 @@ try:
 except:
   print("Connection Time Out Will Try again .")
   print(" Waiting for garment image to appear...")
-  run_button = wait.until(EC.element_to_be_clickable((By.ID, "button")))
+#   run_button = wait.until(EC.element_to_be_clickable((By.ID, "button")))
+  run_button = wait.until(EC.element_to_be_clickable((By.ID, "component-25")))
   run_button.click()
   
-  result_img = wait.until(
-      EC.presence_of_all_elements_located((By.CSS_SELECTOR, "div.image-frame img[loading='lazy'].svelte-1pijsyv"))
-  )[-1]
-  wait.until(lambda d: result_img.get_attribute("src") and "tmp" in result_img.get_attribute("src"))
-  print("Garment image loaded")
+#   result_img = wait.until(
+#       EC.presence_of_all_elements_located((By.CSS_SELECTOR, "div.image-frame img[loading='lazy'].svelte-1pijsyv"))
+#   )[-1]
+#   wait.until(lambda d: result_img.get_attribute("src") and "tmp" in result_img.get_attribute("src"))
+#   print("Garment image loaded")
 
+result_img = wait.until(
+    EC.presence_of_element_located(
+        (By.CSS_SELECTOR, "div.empty.large.unpadded_box img")
+    )
+)
+
+wait.until(
+    lambda d: "/tmp/gradio/" in d.find_element(
+        By.CSS_SELECTOR,
+        "div.empty.large.unpadded_box img"
+    ).get_attribute("src")
+)
+
+print("Garment image loaded")
 
 
 # for i in range(60,1,-1):
