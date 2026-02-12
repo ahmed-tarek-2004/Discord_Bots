@@ -1,0 +1,191 @@
+from selenium import webdriver
+from selenium.webdriver.common.by import By
+from selenium.webdriver.support.ui import WebDriverWait
+from selenium.webdriver.support import expected_conditions as EC
+import os
+import time
+import requests
+
+image1_path = os.getcwd()+r"\\gharabawy.jpeg"
+image2_path = os.getcwd()+r"\\gpHoody.jpg"
+# print(image1_path)
+
+
+options = webdriver.ChromeOptions()
+options.add_argument("--start-maximized")
+driver = webdriver.Chrome(options=options)
+driver.get("https://huggingface.co/spaces/yisol/IDM-VTON")
+
+
+wait = WebDriverWait(driver, 180)
+print(" Waiting for page to load...")
+
+
+iframes = driver.find_elements(By.TAG_NAME, "iframe")
+if iframes:
+    driver.switch_to.frame(iframes[0])
+    print(" Switched into iframe")
+
+
+print(" Uploading first image...")
+file_inputs = wait.until(EC.presence_of_all_elements_located((By.CSS_SELECTOR, "input[type='file']")))
+file_inputs[0].send_keys(image1_path)
+print(" Uploaded person image")
+
+for i in range(20,0,-1):
+    print("wait "+str(i)+" s")
+    time.sleep(1)
+
+
+print(" Uploading second image...")
+if len(file_inputs) > 1:
+    file_inputs[1].send_keys(image2_path)
+    print(" Uploaded cloth image")
+else:
+    print(" Couldn't find second input!")
+
+for i in range(20,1,-1):
+    print("wait "+str(i)+" s")
+    time.sleep(1)
+
+
+
+print(" Running model...")
+run_button = wait.until(EC.element_to_be_clickable((By.ID, "component-25")))
+run_button.click()
+
+
+
+
+print(" Waiting for result image...")
+try:
+    result_img = wait.until(
+        EC.presence_of_element_located((By.CSS_SELECTOR, "img[loading='lazy'].svelte-1pijsyv"))
+    )
+    print("Result appeared!")
+except:
+  print("Connection Time Out Will Try again .")
+  print(" Waiting for garment image to appear...")
+  run_button = wait.until(EC.element_to_be_clickable((By.ID, "button")))
+  run_button.click()
+  
+  result_img = wait.until(
+      EC.presence_of_all_elements_located((By.CSS_SELECTOR, "div.image-frame img[loading='lazy'].svelte-1pijsyv"))
+  )[-1]
+  wait.until(lambda d: result_img.get_attribute("src") and "tmp" in result_img.get_attribute("src"))
+  print("Garment image loaded")
+
+
+
+# for i in range(60,1,-1):
+#     print("wait "+str(i)+" s")
+#     time.sleep(1)
+
+
+# # --- Screenshot ---
+# screenshot_path = os.path.join(os.getcwd(), "result.png")
+# driver.save_screenshot(screenshot_path)
+# print(f" Screenshot saved as {screenshot_path}")
+
+img_url = result_img.get_attribute("src")
+print(" Image URL:", img_url)
+
+response = requests.get(img_url)
+output_path = os.path.join(os.getcwd(), "result.webp")
+with open(output_path, "wb") as f:
+    f.write(response.content)
+
+print(f" Saved result image as {output_path}")
+
+driver.quit()
+
+# from selenium import webdriver
+# from selenium.webdriver.common.by import By
+# from selenium.webdriver.support.ui import WebDriverWait
+# from selenium.webdriver.support import expected_conditions as EC
+# import os
+# import requests
+
+# # ================== CONFIG ==================
+# image1_path = os.getcwd() + r"\\naaasr.jpg"     # person
+# image2_path = os.getcwd() + r"\\gpHoody.jpg"   # cloth
+# output_path = os.path.join(os.getcwd(), "result.webp")
+# URL = "https://huggingface.co/spaces/Kwai-Kolors/Kolors-Virtual-Try-On"
+
+# # ================== HELPERS ==================
+# def wait_for_image_loaded(driver, img_element, wait):
+
+#     wait.until(lambda d: d.execute_script("""
+#         const img = arguments[0];
+#         return img && img.complete && img.naturalWidth > 0 && img.naturalHeight > 0;
+#     """, img_element))
+
+# def wait_for_final_image(result_img, wait):
+
+#     wait.until(lambda d: result_img.get_attribute("src").startswith("http"))
+#     wait_for_image_loaded(driver, result_img, wait)
+#     return result_img.get_attribute("src")
+
+# def wait_for_new_image(driver, old_count, wait):
+#    
+#     wait.until(lambda d: len(d.find_elements(By.TAG_NAME, "img")) > old_count)
+#     imgs = driver.find_elements(By.TAG_NAME, "img")
+#     img = imgs[-1]
+#     wait_for_image_loaded(driver, img, wait)
+#     return img
+
+# # ================== DRIVER ==================
+# options = webdriver.ChromeOptions()
+# options.add_argument("--start-maximized")
+# driver = webdriver.Chrome(options=options)
+# wait = WebDriverWait(driver, 180)
+
+# driver.get(URL)
+# print(" Page opened")
+
+# # ================== IFRAME ==================
+# iframes = driver.find_elements(By.TAG_NAME, "iframe")
+# if iframes:
+#     driver.switch_to.frame(iframes[0])
+#     print(" Switched to iframe")
+
+# # ================== UPLOAD PERSON ==================
+# print(" Uploading person image...")
+# file_inputs = wait.until(EC.presence_of_all_elements_located((By.CSS_SELECTOR, "input[type='file']")))
+# old_img_count = len(driver.find_elements(By.TAG_NAME, "img"))
+# file_inputs[0].send_keys(image1_path)
+# person_img = wait_for_new_image(driver, old_img_count, wait)
+# print(" Person image fully loaded")
+
+# # ================== UPLOAD CLOTH ==================
+# print(" Uploading cloth image...")
+# old_img_count = len(driver.find_elements(By.TAG_NAME, "img"))
+# file_inputs[1].send_keys(image2_path)
+# cloth_img = wait_for_new_image(driver, old_img_count, wait)
+# print(" Cloth image fully loaded")
+
+# # ================== RUN MODEL ==================
+# print(" All images ready. Running model...")
+# run_button = wait.until(EC.element_to_be_clickable((By.ID, "button")))
+# run_button.click()
+
+# # ================== WAIT RESULT ==================
+# print(" Waiting for final result image...")
+
+
+# result_img = wait.until(
+#     EC.presence_of_element_located((By.CSS_SELECTOR, "img[loading='lazy'].svelte-1pijsyv"))
+# )
+
+
+# img_url = wait_for_final_image(result_img, wait)
+# print(" Final image URL:", img_url)
+
+# # ================== DOWNLOAD ==================
+# response = requests.get(img_url)
+# with open(output_path, "wb") as f:
+#     f.write(response.content)
+
+# print(f" Result saved: {output_path}")
+# driver.quit()
+
